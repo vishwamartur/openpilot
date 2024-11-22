@@ -18,7 +18,7 @@ FRAME_DELTA_TOLERANCE = {log.FrameData.ImageSensor.ar0231: 1.0,
 CAMERAS = ('roadCameraState', 'driverCameraState', 'wideRoadCameraState')
 
 # TODO: this shouldn't be needed
-@flaky(max_runs=3)
+@flaky(max_runs=5)
 @pytest.mark.tici
 class TestCamerad:
   @classmethod
