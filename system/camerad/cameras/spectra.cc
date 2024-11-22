@@ -666,11 +666,14 @@ void SpectraCamera::config_ife(int idx, int request_id, bool init) {
   assert(ret == 0);
 }
 
+#include <deque>
+#include <fstream>
 void SpectraCamera::enqueue_buffer(int i, bool dp) {
   int ret;
   uint64_t request_id = request_ids[i];
 
   if (buf_handle_raw[i] && sync_objs[i]) {
+    double st = millis_since_boot();
     // wait
     struct cam_sync_wait sync_wait = {0};
     sync_wait.sync_obj = sync_objs[i];
@@ -680,9 +683,33 @@ void SpectraCamera::enqueue_buffer(int i, bool dp) {
       LOGE("failed to wait for sync: %d %d", ret, sync_wait.sync_obj);
       // TODO: handle frame drop cleanly
     }
+    double et = millis_since_boot();
     buf.frame_metadata[i].timestamp_end_of_isp = (uint64_t)nanos_since_boot();
     buf.frame_metadata[i].timestamp_eof = buf.frame_metadata[i].timestamp_sof + sensor->readout_time_ns;
     if (dp) buf.queue(i);
+
+    if (buf.stream_type == VISION_STREAM_ROAD) {
+      double dt = et-st;
+      printf("%.2f ms\n", dt);
+      static std::deque<double> dq;
+      dq.push_back(dt);
+      if (dq.size() > 20*3) {
+        dq.pop_front();
+
+        int cnt = 0;
+        for (int j = 0; j < dq.size(); j++) {
+          if (dq.at(j) < 1.0f) cnt++;
+        }
+
+        if (cnt > 3) {
+          printf("BAD!!!!\n");
+          std::ofstream("/tmp/bad", std::ios::app).close();
+        } else {
+          std::ofstream("/tmp/good", std::ios::app).close();
+        }
+      }
+
+    }
 
     // destroy old output fence
     for (auto so : {sync_objs, sync_objs_bps_out}) {

@@ -63,13 +63,14 @@ if __name__ == "__main__":
       proc = subprocess.Popen(["python", manager_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
       while not v.connect(False):
         time.sleep(0.1)
+      time.sleep(2)
 
       tearing_cnt = 0
       for _ in range(30):
         while (img := v.recv()) is None:
           time.sleep(0.1)
         tearing_cnt += is_tearing(img)
-      tore = tearing_cnt >= 3
+      tore = tearing_cnt >= 1
       tearing_run_cnt += tore
       print(" - tore ", tore, tearing_cnt)
       print(" - route", params.get("CurrentRoute", encoding="utf8"))
