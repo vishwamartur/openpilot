@@ -161,7 +161,7 @@ node {
                          'testing-closet*', 'hotfix-*']
   def excludeRegex = excludeBranches.join('|').replaceAll('\\*', '.*')
 
-  if (env.BRANCH_NAME != 'master') {
+  if (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != '__jenkins_loop_test_6') {
     properties([
         disableConcurrentBuilds(abortPrevious: true)
     ])
@@ -221,7 +221,7 @@ node {
       'camerad': {
         deviceStage("AR0231", "tici-ar0231", ["UNSAFE=1"], [
           step("build", "cd system/manager && ./build.py"),
-          step("test camerad", "pytest system/camerad/test/test_camerad.py", [timeout: 60]),
+          step("test camerad", "pytest system/camerad/test/test_camerad.py -s", [timeout: 60]),
           step("test exposure", "pytest system/camerad/test/test_exposure.py"),
         ])
         deviceStage("OX03C10", "tici-ox03c10", ["UNSAFE=1"], [

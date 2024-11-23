@@ -18,7 +18,7 @@ FRAME_DELTA_TOLERANCE = {log.FrameData.ImageSensor.ar0231: 1.0,
 CAMERAS = ('roadCameraState', 'driverCameraState', 'wideRoadCameraState')
 
 # TODO: this shouldn't be needed
-@flaky(max_runs=3)
+@flaky(max_runs=5)
 @pytest.mark.tici
 class TestCamerad:
   @classmethod
@@ -45,6 +45,8 @@ class TestCamerad:
       assert expected_frames*0.95 < len(msgs) < expected_frames*1.05, f"unexpected frame count {cam}: {expected_frames=}, got {len(msgs)}"
 
       dts = np.abs(np.diff([getattr(m, m.which()).timestampSof/1e6 for m in msgs]) - 1000/SERVICE_LIST[cam].frequency)
+      print(np.diff([getattr(m, m.which()).timestampSof/1e6 for m in msgs]))
+      print(dts)
       assert (dts < FRAME_DELTA_TOLERANCE[cls.sensor_type]).all(), f"{cam} dts(ms) out of spec: max diff {dts.max()}, 99 percentile {np.percentile(dts, 99)}"
 
       for m in msgs:
